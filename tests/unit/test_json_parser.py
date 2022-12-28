@@ -1,21 +1,25 @@
-from signal_interpreter_server.json_parser import JsonParser
-import os
+from unittest.mock import patch, mock_open
+from pandas.testing import assert_frame_equal
+from signal_interpreter_server.json_parser import JsonParser, json
+import pandas as pd 
 
-def test_get_signal_title_with_valid_id():
-    json_parser = JsonParser()
-    json_parser.data = {"services": [{"title": "ECU Reset", "id": "11"}]}
-    json_parser.load_file(json_parser.data)
-    assert json_parser.get_signal_title("11")=="ECU Reset"
+data={"services": [{"title": "ECU Reset", "id": "11"}]}
+data_string=json.dumps(data)
+df=pd.DataFrame(data["services"])
 
-def test_load_file_with_valid_input():
-    json_parser = JsonParser()
-    json_parser.data = {"services": [{"title": "ECU Reset", "id": "11"}]}
-    json_parser.load_file(json_parser.data)
-    assert json_parser.data.shape[0]==1
+jsonParser = JsonParser()
 
-def test_open_file_with_valid_file_path():
-    json_parser=JsonParser()
-    file_path=os.path.dirname(__file__)
-    file_path=os.path.join(file_path, "..", "data", "signal_database_test.json")
-    json_parser.open_file(file_path)
-    assert len(json_parser.data["services"])==1
+
+def test_load_file():
+    with patch("builtins.open", mock_open(read_data=data_string)):
+        jsonParser.load_file("file_to_path")
+        print(data_string)
+        assert jsonParser.get_data()==data_string
+
+def test_data2pd():
+    jsonParser.data2pd(data_string)
+    assert_frame_equal(jsonParser.get_data(),df)
+
+def test_get_signal_title():
+    assert jsonParser.get_signal_title(df,"11")=="ECU Reset"
+

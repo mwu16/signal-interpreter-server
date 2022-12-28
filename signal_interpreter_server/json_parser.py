@@ -1,19 +1,26 @@
 import pandas as pd
 import json
 
-class JsonParser:
+class JsonParser:   
     def __init__(self):
         self.data=pd.DataFrame()
 
-    def open_file(self, file_path):
-        self.data = open(file_path, "r")
-        self.data=self.data.read()
-        self.data=json.loads(self.data)
+    def load_file(self, file_path):
+        data = open(file_path, "r")
+        data=data.read()
+        self.set_data(data)
+    
+    def data2pd(self, data):
+        data=json.loads(data)
+        file=data["services"]
+        data=pd.DataFrame(file)
+        self.set_data(data)
 
-    def load_file(self, file):
-        file=file["services"]
-        self.data=pd.DataFrame(file)
+    def get_signal_title(self, data, identifier):
+        return data[data["id"]==identifier]["title"].item()
+
+    def set_data(self,data):
+        self.data=data
+    
+    def get_data(self):
         return self.data
-
-    def get_signal_title(self, identifier):
-        return self.data[self.data["id"]==identifier]["title"].item()
